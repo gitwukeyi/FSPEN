@@ -86,9 +86,8 @@ class DualPathExtensionRNN(nn.Module):
         intra_out = torch.transpose(inputs, dim0=1, dim1=2).contiguous()  # (B, T, F, N)
         intra_out = torch.reshape(intra_out, shape=(B * T, F, N))
         intra_out, _ = self.intra_chunk_rnn(intra_out)
-        intra_out = torch.reshape(intra_out, shape=(B, T, F, N))
         intra_out = self.intra_chunk_fc(intra_out)  # (B, T, F, N)
-
+        intra_out = torch.reshape(intra_out, shape=(B, T, F, N))
         intra_out = torch.transpose(intra_out, dim0=1, dim1=2).contiguous()  # (B, F, T, N)
         intra_out = self.intra_chunk_norm(intra_out)  # (B, F, T, N)
 
