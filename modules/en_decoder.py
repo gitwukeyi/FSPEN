@@ -1,5 +1,3 @@
-# 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
-
 import torch
 from torch import nn, Tensor
 
