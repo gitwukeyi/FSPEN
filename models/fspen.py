@@ -126,7 +126,7 @@ class FullSubPathExtension(nn.Module):
         self.full_band_decoder = FullBandDecoder(configs)
         self.sub_band_decoder = SubBandDecoder(configs)
 
-        self.mask_padding = nn.ConstantPad2d(padding=(0, 1, 0, 0), value=0.0)
+        self.mask_padding = nn.ConstantPad2d(padding=(1, 0, 0, 0), value=0.0)
 
     def forward(self, in_complex_spectrum: Tensor, in_amplitude_spectrum: Tensor, hidden_state: list):
         """
@@ -167,8 +167,8 @@ class FullSubPathExtension(nn.Module):
         full_band_mask = torch.reshape(full_band_mask, shape=(batch, frames, 2, -1))
         sub_band_mask = torch.reshape(sub_band_mask, shape=(batch, frames, 1, -1))
 
-        full_band_mask = self.mask_padding(full_band_mask)
-        sub_band_mask = self.mask_padding(sub_band_mask)
+        full_band_mask = self.mask_padding(full_band_mask)  # Zero padding in the DC signal part removes the DC component
+        sub_band_mask = self.mask_padding(sub_band_mask)  # Zero padding in the DC signal part removes the DC component
 
         full_band_out = in_complex_spectrum * full_band_mask
         sub_band_out = in_amplitude_spectrum * sub_band_mask
