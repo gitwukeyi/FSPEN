@@ -4,6 +4,7 @@ from thop import profile
 from configs.train_configs import TrainConfig
 from models.fspen import FullSubPathExtension
 
+
 if __name__ == "__main__":
     configs = TrainConfig()
     model = FullSubPathExtension(configs)
