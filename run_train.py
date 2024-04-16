@@ -1,7 +1,7 @@
 import json
 
 import torch
-from thop import profile
+from thop import profile, clever_format
 
 from configs.train_configs import TrainConfig
 from models.fspen import FullSubPathExtension
@@ -9,7 +9,7 @@ from models.fspen import FullSubPathExtension
 if __name__ == "__main__":
     configs = TrainConfig()
     with open("config.json", mode="w", encoding="utf-8") as file:
-        json.dump(configs.dict(), file, indent=4)
+        json.dump(configs.__dict__, file, indent=4)
 
     model = FullSubPathExtension(configs)
 
@@ -34,5 +34,6 @@ if __name__ == "__main__":
     in_hidden_state = [[torch.zeros(1, batch * num_bands, inter_hidden_size//groups) for _ in range(groups)]
                        for _ in range(num_modules)]
 
-    macs, params = profile(model, inputs=(complex_spectrum, amplitude_spectrum, in_hidden_state))
-    print(f"mac: {macs / 1e9} G \nparams: {params / 1e6}M")
+    flops, params = profile(model, inputs=(complex_spectrum, amplitude_spectrum, in_hidden_state))
+    flops, params = clever_format(nums=[flops, params], format="%0.4f")
+    print(f"flops: {flops}\nparams: {params}")
