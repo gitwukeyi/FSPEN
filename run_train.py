@@ -1,12 +1,16 @@
+import json
+
 import torch
 from thop import profile
 
 from configs.train_configs import TrainConfig
 from models.fspen import FullSubPathExtension
 
-
 if __name__ == "__main__":
     configs = TrainConfig()
+    with open("config.json", mode="w", encoding="utf-8") as file:
+        json.dump(configs.dict(), file, indent=4)
+
     model = FullSubPathExtension(configs)
 
     batch = 1
@@ -27,10 +31,7 @@ if __name__ == "__main__":
     amplitude_spectrum = torch.permute(amplitude_spectrum, dims=(0, 2, 1))
     amplitude_spectrum = torch.reshape(amplitude_spectrum, shape=(batch, frames, 1, frequency))
     #
-    # in_hidden_state = [[torch.randn(1, batch * num_bands, inter_hidden_size) for _ in range(groups)]
-    #                    for _ in range(num_modules)]
-
-    in_hidden_state = [[None for _ in range(groups)]
+    in_hidden_state = [[torch.zeros(1, batch * num_bands, inter_hidden_size) for _ in range(groups)]
                        for _ in range(num_modules)]
 
     macs, params = profile(model, inputs=(complex_spectrum, amplitude_spectrum, in_hidden_state))
