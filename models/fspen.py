@@ -102,13 +102,16 @@ class FullSubPathExtension(nn.Module):
         super().__init__()
         self.full_band_encoder = FullBandEncoder(configs)
         self.sub_band_encoder = SubBandEncoder(configs)
+
         merge_split = configs.merge_split
+        merge_channels = merge_split["channels"]
+        merge_bands = merge_split["bands"]
+        compress_rate = merge_split["compress_rate"]
+
         self.feature_merge_layer = nn.Sequential(
-            nn.Linear(in_features=merge_split["channels"],
-                      out_features=merge_split["channels"]//merge_split["compress_rate"]),
+            nn.Linear(in_features=merge_channels, out_features=merge_channels//compress_rate),
             nn.ELU(),
-            nn.Conv1d(in_channels=merge_split["bands"],
-                      out_channels=merge_split["bands"]//merge_split["compress_rate"], kernel_size=1, stride=1)
+            nn.Conv1d(in_channels=merge_bands, out_channels=merge_bands//compress_rate, kernel_size=1, stride=1)
         )
 
         self.dual_path_extension_rnn_list = nn.ModuleList()
@@ -116,10 +119,8 @@ class FullSubPathExtension(nn.Module):
             self.dual_path_extension_rnn_list.append(DualPathExtensionRNN(**configs.dual_path_extension["parameters"]))
 
         self.feature_split_layer = nn.Sequential(
-            nn.Conv1d(in_channels=merge_split["bands"]//merge_split["compress_rate"],
-                      out_channels=merge_split["bands"], kernel_size=1, stride=1),
-            nn.Linear(in_features=merge_split["channels"]//merge_split["compress_rate"],
-                      out_features=merge_split["channels"]),
+            nn.Conv1d(in_channels=merge_bands//compress_rate, out_channels=merge_bands, kernel_size=1, stride=1),
+            nn.Linear(in_features=merge_channels//compress_rate, out_features=merge_channels),
             nn.ELU()
         )
 
@@ -167,12 +168,12 @@ class FullSubPathExtension(nn.Module):
         full_band_mask = torch.reshape(full_band_mask, shape=(batch, frames, 2, -1))
         sub_band_mask = torch.reshape(sub_band_mask, shape=(batch, frames, 1, -1))
 
-        full_band_mask = self.mask_padding(full_band_mask)  # Zero padding in the DC signal part removes the DC component
-        sub_band_mask = self.mask_padding(sub_band_mask)  # Zero padding in the DC signal part removes the DC component
+        # Zero padding in the DC signal part removes the DC component
+        full_band_mask = self.mask_padding(full_band_mask)
+        sub_band_mask = self.mask_padding(sub_band_mask)
 
         full_band_out = in_complex_spectrum * full_band_mask
         sub_band_out = in_amplitude_spectrum * sub_band_mask
         # outputs is (batch, frames, 2, frequency), complex style.
 
         return full_band_out + sub_band_out, out_hidden_state
-

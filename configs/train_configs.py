@@ -56,7 +56,7 @@ class TrainConfig(BaseModel):
     dual_path_extension: dict = {
         "num_modules": 3,
         "parameters": {"input_size": 16, "intra_hidden_size": 16, "inter_hidden_size": 16,
-                       "groups": 4, "rnn_type": "GRU"}
+                       "groups": 8, "rnn_type": "GRU"}
     }
 
     @field_validator("sub_band_decoder")

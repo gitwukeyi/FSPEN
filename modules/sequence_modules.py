@@ -29,7 +29,8 @@ class GroupRNN(nn.Module):
         self.rnn_list = nn.ModuleList()
         for _ in range(groups):
             self.rnn_list.append(
-                getattr(nn, rnn_type)(input_size=input_size // groups, hidden_size=hidden_size, num_layers=num_layers,
+                getattr(nn, rnn_type)(input_size=input_size // groups, hidden_size=hidden_size//groups,
+                                      num_layers=num_layers,
                                       bidirectional=bidirectional, batch_first=batch_first)
             )
 
@@ -72,7 +73,7 @@ class DualPathExtensionRNN(nn.Module):
 
         self.inter_chunk_rnn = GroupRNN(input_size=input_size, hidden_size=inter_hidden_size, groups=groups,
                                         rnn_type=rnn_type)
-        self.inter_chunk_fc = nn.Linear(in_features=inter_hidden_size * groups, out_features=input_size)
+        self.inter_chunk_fc = nn.Linear(in_features=inter_hidden_size, out_features=input_size)
 
     def forward(self, inputs: Tensor, hidden_state: List[Tensor]):
         """
