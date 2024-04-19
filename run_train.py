@@ -6,6 +6,7 @@ from thop import profile, clever_format
 from configs.train_configs import TrainConfig
 from models.fspen import FullSubPathExtension
 
+
 if __name__ == "__main__":
     configs = TrainConfig()
     with open("config.json", mode="w", encoding="utf-8") as file:
